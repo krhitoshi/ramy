@@ -48,7 +48,7 @@ class Ramy
     @use_layout = true
   end
   def script_name
-    @cgi.script_name
+    File::basename($0)
   end
   def controller_name
     File::basename(script_name,'.cgi')
@@ -68,7 +68,7 @@ class Ramy
         raise "不明なメソッドです｡ [#{@method}]"
       end
     rescue => error
-      log(error)
+      log(error.to_s + caller.to_s)
       set_error(error)
 
       if @method.to_s == @default_method.to_s
@@ -82,6 +82,9 @@ class Ramy
   end
   def redirect(method,option="")
     location = "#{script_name}?mt=#{method}"
+    log(location)
+    log($0)
+    
     if option != ""
       location += "&#{option}"
     end
@@ -101,7 +104,7 @@ class Ramy
   def output_bind(base,b,use_layout=true)
     title = @title
     main_html = get_rhtml(base).result(b)
-    if use_layout
+     if use_layout
       html = get_rhtml('application').result(binding)
     else
       html = main_html
@@ -136,7 +139,7 @@ class Ramy
   end
   def get_error
     str = pop_session('error')
-    str.to_br
+    str.to_br if str
   end
   def get_message
     pop_session('message')
