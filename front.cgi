@@ -1,7 +1,7 @@
 #!/usr/bin/ruby -w
 
 $LOAD_PATH << "lib"
-require 'ramy.rb
+require 'ramy'
 
-ramy = Ramy.new('ramy')
+ramy = Ramy.new
 ramy.start

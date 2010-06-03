@@ -93,7 +93,7 @@ class Ramy
     end
   end
   def render_method(method)
-    bind = send(mehod)
+    bind = send(method)
     output_bind(method,bind,@use_layout)
   end
   def redirect(method,option="")
@@ -113,23 +113,22 @@ class Ramy
   end
   def output_bind(base,b,use_layout=true)
     title = @title
-    main_html = get_rhtml(base).result(b)
+    main_html = get_html(base).result(b)
     html = if use_layout
-       get_rhtml('application').result(binding)
+       get_partial('application',binding)
     else
       main_html
     end
     print_header
-    print html    
+    print html
   end
-  def get_partial(base)
-    get_rhtml(base).result(binding)
+  def get_partial(base,bind=binding)
+    get_html(base).result(bind)
   end
-  def get_rhtml(base)
+  def get_html(base)
     file = "views/#{controller_name}/#{base}.rhtml"
-    unless File.exist?(file)
-      raise("File not found: [#{file}]")
-    end
+    
+    raise("テンプレートファイルが存在しません｡ [#{file}]") unless File.exist?(file)
 
     text = ""
     text += File.read(file)
