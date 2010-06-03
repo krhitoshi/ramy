@@ -115,15 +115,19 @@ class Ramy
     title = @title
     main_html = get_html_base(base).result(binding)
     html = if use_layout
-       get_partial('application',binding)
-    else
-      main_html
-    end
+             get_layout(binding)
+           else
+             main_html
+           end
     print_header
     print html
   end
-  def get_partial(base,bind=binding)
-    get_html_base(base).result(bind)
+  def get_layout(bind)
+    file = "views/layout/#{controller_name}.rhtml"
+    get_html_file(file).result(bind)
+  end
+  def get_partial(base)
+    get_html_base(base).result(binding)
   end
   def get_html_file(file)
     raise("テンプレートファイルが存在しません｡ [#{file}]") unless File.exist?(file)
