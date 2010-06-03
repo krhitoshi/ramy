@@ -35,6 +35,12 @@ class String
   end
 end
 
+class Context
+  def get_binding
+    binding
+  end
+end
+
 class Ramy
   def initialize(prefix='ramy')
     @prefix = prefix
@@ -115,7 +121,9 @@ class Ramy
     title = @title
     main_html = get_html_base(base).result(binding)
     html = if use_layout
-             get_layout(binding)
+             get_layout(Context.new.get_binding{
+                          get_html_base(base).result(binding)
+                        })
            else
              main_html
            end
@@ -124,10 +132,7 @@ class Ramy
   end
   def get_layout(bind)
     file = "views/layout/#{controller_name}.rhtml"
-#    get_html_file(file).result(bind){
-    get_html_file(file){
-      "test"
-    }.result(bind)
+    get_html_file(file).result(bind)
   end
   def get_partial(base)
     get_html_base(base).result(binding)
