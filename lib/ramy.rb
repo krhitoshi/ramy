@@ -261,8 +261,8 @@ class Ramy
     @cgi.params.inspect + @session.inspect
   end
   def log(value)
-    Syslog.open(@prefix){
-      Syslog.log(Syslog::LOG_WARNING,value.to_s)
+    Syslog.open(@prefix){|syslog|
+      syslog.log(Syslog::LOG_WARNING,value.to_s)
     }
   end
 end
