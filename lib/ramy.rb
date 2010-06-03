@@ -157,18 +157,14 @@ class Ramy
     @session['error'] = str
     session_update
   end
-  def error_exist?
-    session_exist?('error')
+  def has_error?
+    session_has_key?('error')
   end
-  def message_exist?
-    session_exist?('message')
+  def has_message?
+    session_has_key?('message')
   end
-  def session_exist?(key)
-    if @session[key].to_s != ""
-      true
-    else
-      false
-    end
+  def session_has_key?(key)
+    @session[key].blank? true ? false
   end
   def start_session(cgi,key,prefix)
     CGI::Session.new(cgi, "session_key" => key,"prefix" => prefix,"session_expires" => Time.now + 60*60*24*365)
