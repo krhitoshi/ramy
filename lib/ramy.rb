@@ -23,7 +23,14 @@ class Object
 end
 
 class String
-  def to_br
+  def strip
+    if self.blank? 
+      "" 
+    else
+      self.gsub(/(^(\s|　)+)|((\s|　)+$)/, '')
+    end
+  end
+  def newline_to_br
     self.gsub(/\r\n/,'<br />').gsub(/(\r|\n)/,'<br />')
   end
 end
@@ -137,7 +144,7 @@ class Ramy
   end
   def get_error
     str = pop_session('error')
-    str.to_br if str
+    str.newline_to_br if str
   end
   def get_message
     pop_session('message')
@@ -246,13 +253,6 @@ class Ramy
       num_pages += 1
     end
     num_pages
-  end
-  def Ramy.strip(value)
-    unless value.blank?
-      value.gsub(/(^(\s|　)+)|((\s|　)+$)/, '')
-    else
-      value
-    end
   end
   def escape(value)
     CGI.escape(value)

@@ -13,12 +13,13 @@ class TestRamy < Test::Unit::TestCase
     values = [['2','2'],[' 2','2'],['2 ','2'],[' 2 ','2'],
               ['　2','2'],['2　','2'],['　2　','2'],
               ['さとみ','さとみ'],['　さとみ','さとみ'],['さとみ　','さとみ'],['　さとみ　','さとみ'],
-              ['',''],[nil,nil],[' ',''],['　',''],[' 　 ',''],['　 　',''],
+              ['',''],[' ',''],['　',''],[' 　 ',''],['　 　',''],
+              #              [nil,nil],
               ['高橋 義男','高橋 義男'],['高橋　義男','高橋　義男'],
               [' 高橋 義男 ','高橋 義男'],['　高橋　義男　','高橋　義男'],
               ['　高橋 義男　','高橋 義男'],[' 高橋　義男 ','高橋　義男']]
     values.each do |input,res|
-      assert_equal(res,Ramy.strip(input),%Q!"#{input}" -> "#{res}"!)
+      assert_equal(res,input.strip,%Q!"#{input}" -> "#{res}"!)
     end
   end
   def test_object_blank
@@ -31,5 +32,11 @@ class TestRamy < Test::Unit::TestCase
     assert_nothing_raised{ @ramy.log('log test') }
     assert_nothing_raised{ @ramy.log(12345) }
     assert_nothing_raised{ @ramy.log(nil) }
+  end
+  def test_escape
+#    @ramy.escape("<>")
+  end
+  def test_string_newline_to_br
+    
   end
 end
