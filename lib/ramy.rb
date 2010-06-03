@@ -74,7 +74,7 @@ class Ramy
     if @method.blank? 
       raise "メソッドが指定されていません｡"
     elsif @methods.include?(@method.intern)
-      render_method(@method,@use_layout)
+      render_method(@method)
     else
       raise "不明なメソッドです｡ [#{@method}]"
     end
@@ -98,9 +98,9 @@ class Ramy
       redirect(@default_method)      
     end
   end
-  def render_method(method,use_layout=true)
+  def render_method(method)
     send(method)
-    print_html(method,use_layout)
+    print_html(method)
   end
   def redirect(method,option="")
     location = "#{script_name}?mt=#{method}"
@@ -117,7 +117,7 @@ class Ramy
   def print_header(headers="text/html")
     print @cgi.header(headers)
   end
-  def print_html(method,use_layout=true)
+  def print_html(method)
     main_html = get_html_base(method).result(binding)
     print_header
     print use_layout? ? get_layout{main_html} : main_html
