@@ -76,7 +76,7 @@ class Ramy
     raise_error(error)
   end
   def error_method?
-    @default_method == 'error'
+    @method.to_s == 'error'
   end
   def default_method?
     @method.to_s == @default_method.to_s
