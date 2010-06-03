@@ -36,7 +36,7 @@ class String
 end
 
 class Ramy
-  def initialize(prefix)
+  def initialize(prefix='ramy')
     @prefix = prefix
     @cgi = CGI.new
     if @cgi.query_string
@@ -51,7 +51,7 @@ class Ramy
     @action = param('ac')
 
     @title = ""
-    @num_lines_in_page = 50 # 1ページに表示する行数
+    @num_lines_in_page = 50
     @use_layout = true
   end
   def script_name
@@ -65,30 +65,36 @@ class Ramy
     binding
   end
   def start
-    begin
-      if @method.blank? 
-        raise "メソッドが指定されていません｡"
-      elsif @methods.include?(@method.intern)
-        render_method(@method)
-      else
-        raise "不明なメソッドです｡ [#{@method}]"
-      end
-    rescue => error
-      log(error.to_s + caller.to_s)
-      set_error(error)
-
-      if @method.to_s == @default_method.to_s
-        redirect('error')
-      elsif @method.to_s != @default_method.to_s
-        redirect(@default_method)
-      else
-        fatal_error(error)
-      end
+    if @method.blank? 
+      raise "メソッドが指定されていません｡"
+    elsif @methods.include?(@method.intern)
+      render_method(@method)
+    else
+      raise "不明なメソッドです｡ [#{@method}]"
+    end
+  rescue => error
+    raise_error(error)
+  end
+  def error_method?
+    @default_method == 'error'
+  end
+  def default_method?
+    @method.to_s == @default_method.to_s
+  end
+  def raise_error(error)
+    log(error.to_s + caller.to_s)
+    set_error(error)
+    if error_method?
+      fatal_error(error)
+    elsif default_method?
+      redirect('error')
+    else
+      redirect(@default_method)      
     end
   end
   def render_method(method)
-    bind = send(@method)
-    output_bind(@method,bind,@use_layout)
+    bind = send(mehod)
+    output_bind(method,bind,@use_layout)
   end
   def redirect(method,option="")
     location = "#{script_name}?mt=#{method}"
@@ -96,28 +102,24 @@ class Ramy
     if option != ""
       location += "&#{option}"
     end
-    output_head({ 'status' => '302 Found', 'Location' => location})
+    print_header({ 'status' => '302 Found', 'Location' => location})
   end
   def fatal_error(error)
-    output_head
+    print_header
     print "致命的なエラー: #{error}"
   end
-  def output_head(head=nil)
-    if head
-      print @cgi.header(head)
-    else
-      print @cgi.header
-    end
+  def print_header(headers="text/html")
+    print @cgi.header(headers)
   end
   def output_bind(base,b,use_layout=true)
     title = @title
     main_html = get_rhtml(base).result(b)
-     if use_layout
-      html = get_rhtml('application').result(binding)
+    html = if use_layout
+       get_rhtml('application').result(binding)
     else
-      html = main_html
+      main_html
     end
-    output_head
+    print_header
     print html    
   end
   def get_partial(base)
