@@ -44,7 +44,7 @@ class Ramy
     @action = param('ac')
 
     @title = ""
-    @page_list = 50 # 1ページに表示する行数
+    @num_lines_in_page = 50 # 1ページに表示する行数
     @use_layout = true
   end
   def script_name
@@ -82,8 +82,6 @@ class Ramy
   end
   def redirect(method,option="")
     location = "#{script_name}?mt=#{method}"
-    log(location)
-    log($0)
     
     if option != ""
       location += "&#{option}"
@@ -240,10 +238,10 @@ class Ramy
     page
   end
   def calc_limit(page)
-    (page - 1) * @page_list
+    (page - 1) * @num_lines_in_page
   end
   def calc_num_pages(num)
-    num_pages, tmp = num.divmod(@page_list)
+    num_pages, tmp = num.divmod(@num_lines_in_page)
     if tmp != 0
       num_pages += 1
     end
