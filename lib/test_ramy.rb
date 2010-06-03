@@ -7,7 +7,7 @@ class TestRamy < Test::Unit::TestCase
   def setup
     ARGV.replace(["mt=error"])
     @ramy = Ramy.new('ramy_test')
-    @ramy.start
+#    @ramy.start
   end
   def test_strip
     values = [['2','2'],[' 2','2'],['2 ','2'],[' 2 ','2'],
@@ -26,5 +26,10 @@ class TestRamy < Test::Unit::TestCase
     values.each do |input,res|
       assert_equal(res,input.blank?,%Q!"#{input}" -> "#{res}"!)
     end
+  end
+  def test_log
+    assert_nothing_raised{ @ramy.log('log test') }
+    assert_nothing_raised{ @ramy.log(12345) }
+    assert_nothing_raised{ @ramy.log(nil) }
   end
 end
