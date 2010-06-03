@@ -35,12 +35,6 @@ class String
   end
 end
 
-class Context
-  def get_binding
-    binding
-  end
-end
-
 class Ramy
   def initialize(prefix='ramy')
     @prefix = prefix
@@ -59,6 +53,12 @@ class Ramy
     @title = ""
     @num_lines_in_page = 50
     @use_layout = true
+  end
+  def use_layout?
+    @use_layout
+  end
+  def get_binding
+    binding
   end
   def script_name
     File::basename($0)
@@ -119,19 +119,12 @@ class Ramy
   end
   def print_html(method,use_layout=true)
     main_html = get_html_base(method).result(binding)
-    html = if use_layout
-             get_layout(Context.new(binding).get_binding{
-                          main_html
-                        })
-           else
-             main_html
-           end
     print_header
-    print html
+    print use_layout? ? get_layout{main_html} : main_html
   end
-  def get_layout(bind)
+  def get_layout
     file = "views/layout/#{controller_name}.rhtml"
-    get_html_file(file).result(bind)
+    get_html_file(file).result(binding)
   end
   def get_partial(method)
     get_html_base(method).result(binding)
