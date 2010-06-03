@@ -113,7 +113,7 @@ class Ramy
   end
   def print_html(base,use_layout=true)
     title = @title
-    main_html = get_html(base).result(binding)
+    main_html = get_html_base(base).result(binding)
     html = if use_layout
        get_partial('application',binding)
     else
@@ -123,16 +123,18 @@ class Ramy
     print html
   end
   def get_partial(base,bind=binding)
-    get_html(base).result(bind)
+    get_html_base(base).result(bind)
   end
-  def get_html(base)
-    file = "views/#{controller_name}/#{base}.rhtml"
-    
+  def get_html_file(file)
     raise("テンプレートファイルが存在しません｡ [#{file}]") unless File.exist?(file)
-
+    
     text = ""
     text += File.read(file)
     ERB.new(text,nil,"-")
+  end
+  def get_html_base(base)
+    file = "views/#{controller_name}/#{base}.rhtml"
+    get_html_file(file)
   end
   def set_default_method(method)
     @default_method = method
