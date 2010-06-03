@@ -69,8 +69,7 @@ class Ramy
       if @method.blank? 
         raise "メソッドが指定されていません｡"
       elsif @methods.include?(@method.intern)
-        b = send(@method)
-        output_bind(@method,b,@use_layout)
+        render_method(@method)
       else
         raise "不明なメソッドです｡ [#{@method}]"
       end
@@ -87,6 +86,10 @@ class Ramy
       end
     end
   end
+  def render_method(method)
+    bind = send(@method)
+    output_bind(@method,bind,@use_layout)
+  end
   def redirect(method,option="")
     location = "#{script_name}?mt=#{method}"
     
@@ -97,7 +100,7 @@ class Ramy
   end
   def fatal_error(error)
     output_head
-    print "Fatal Error: #{error}"
+    print "致命的なエラー: #{error}"
   end
   def output_head(head=nil)
     if head
@@ -164,7 +167,7 @@ class Ramy
     session_has_key?('message')
   end
   def session_has_key?(key)
-    @session[key].blank? true ? false
+    @session[key].blank? ? true : false
   end
   def start_session(cgi,key,prefix)
     CGI::Session.new(cgi, "session_key" => key,"prefix" => prefix,"session_expires" => Time.now + 60*60*24*365)
@@ -173,8 +176,8 @@ class Ramy
       @session[key] = nil
   end
   def delete_session_keys(keys)
-    keys.each{|key|
-      delete_session_key(key)
+    keys.each{|key| 
+      delete_session_key(key) 
     }
   end
   def session_delete
@@ -193,11 +196,7 @@ class Ramy
   def get_value(key)
     value = param(key)
     if value
-      if value == ""
-        @session[key] = nil
-      else
-        @session[key] = value
-      end
+      @session[key] = (value == "") ? nil : value
     else
       value = @session[key]
     end

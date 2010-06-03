@@ -3,6 +3,7 @@
 $:.unshift File.join(File.dirname(__FILE__), "..", "lib")
 require 'ramy'
 require 'test/unit'
+
 class TestRamy < Test::Unit::TestCase
   def setup
     ARGV.replace(["mt=error"])
