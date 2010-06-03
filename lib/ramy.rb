@@ -117,12 +117,11 @@ class Ramy
   def print_header(headers="text/html")
     print @cgi.header(headers)
   end
-  def print_html(base,use_layout=true)
-    title = @title
-    main_html = get_html_base(base).result(binding)
+  def print_html(method,use_layout=true)
+    main_html = get_html_base(method).result(binding)
     html = if use_layout
-             get_layout(Context.new.get_binding{
-                          get_html_base(base).result(binding)
+             get_layout(Context.new(binding).get_binding{
+                          main_html
                         })
            else
              main_html
@@ -134,8 +133,8 @@ class Ramy
     file = "views/layout/#{controller_name}.rhtml"
     get_html_file(file).result(bind)
   end
-  def get_partial(base)
-    get_html_base(base).result(binding)
+  def get_partial(method)
+    get_html_base(method).result(binding)
   end
   def get_html_file(file)
     raise("テンプレートファイルが存在しません｡ [#{file}]") unless File.exist?(file)
