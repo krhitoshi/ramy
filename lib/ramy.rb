@@ -124,7 +124,10 @@ class Ramy
   end
   def get_layout(bind)
     file = "views/layout/#{controller_name}.rhtml"
-    get_html_file(file).result(bind)
+#    get_html_file(file).result(bind){
+    get_html_file(file){
+      "test"
+    }.result(bind)
   end
   def get_partial(base)
     get_html_base(base).result(binding)
