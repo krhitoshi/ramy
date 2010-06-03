@@ -94,7 +94,7 @@ class Ramy
   end
   def render_method(method)
     bind = send(method)
-    output_bind(method,bind,@use_layout)
+    print_html(method,bind,@use_layout)
   end
   def redirect(method,option="")
     location = "#{script_name}?mt=#{method}"
@@ -111,9 +111,9 @@ class Ramy
   def print_header(headers="text/html")
     print @cgi.header(headers)
   end
-  def output_bind(base,b,use_layout=true)
+  def print_html(base,use_layout=true)
     title = @title
-    main_html = get_html(base).result(b)
+    main_html = get_html(base).result(binding)
     html = if use_layout
        get_partial('application',binding)
     else
