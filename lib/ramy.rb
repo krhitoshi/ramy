@@ -68,7 +68,7 @@ class Ramy
     if @method.blank? 
       raise "メソッドが指定されていません｡"
     elsif @methods.include?(@method.intern)
-      render_method(@method)
+      render_method(@method,@use_layout)
     else
       raise "不明なメソッドです｡ [#{@method}]"
     end
@@ -92,9 +92,9 @@ class Ramy
       redirect(@default_method)      
     end
   end
-  def render_method(method)
-    bind = send(method)
-    print_html(method,bind,@use_layout)
+  def render_method(method,use_layout=true)
+    send(method)
+    print_html(method,use_layout)
   end
   def redirect(method,option="")
     location = "#{script_name}?mt=#{method}"
