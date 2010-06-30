@@ -40,7 +40,7 @@ class Ramy
     @prefix = prefix
     @cgi = CGI.new
     if @cgi.query_string
-      @cgi.params.merge(CGI::parse(@cgi.query_string)){|key, self_val, other_val| self_val }
+      @cgi.params.merge!(CGI::parse(@cgi.query_string)){|key, self_val, other_val| self_val }
     end
 
     @session = start_session(@cgi, @prefix, @prefix+".")
