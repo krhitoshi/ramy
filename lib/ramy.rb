@@ -109,6 +109,7 @@ class Ramy
       location += "&#{option}"
     end
     print_header({ 'status' => '302 Found', 'Location' => location})
+    exit
   end
   def fatal_error(error)
     print_header
