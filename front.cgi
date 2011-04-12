@@ -1,4 +1,4 @@
-#!/usr/bin/ruby -w
+#!/usr/bin/env ruby
 
 $LOAD_PATH << "lib"
 require 'ramy'
