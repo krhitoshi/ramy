@@ -20,9 +20,13 @@ class Object
   def blank?
     self.to_s.empty?
   end
+  def not_blank?
+    not blank?
+  end
 end
 
 class String
+  alias :_orig_strip :strip
   def strip
     if self.blank? 
       "" 
@@ -33,26 +37,48 @@ class String
   def newline_to_br
     self.gsub(/\r\n/,'<br />').gsub(/(\r|\n)/,'<br />')
   end
+  def small_tag
+    "<small>#{self}</small>"
+  end
 end
 
 class Ramy
-  def initialize(prefix='ramy')
+  def initialize(prefix='ramy', system_path=nil)
     @prefix = prefix
+    @system_path = system_path
+
     @cgi = CGI.new
     if @cgi.query_string
       @cgi.params.merge!(CGI::parse(@cgi.query_string)){|key, self_val, other_val| self_val }
     end
-
     @session = start_session(@cgi, @prefix, @prefix+".")
 
-    @default_method = 'error'
-    @methods = [:error]
     @method = param('mt')
     @action = param('ac')
 
     @title = ""
     @num_lines_in_page = 50
     @use_layout = true
+
+    set_default_method(:error)
+    set_methods([:error])
+  end
+  def start
+    if @method.blank? 
+      raise "メソッドが指定されていません｡"
+    elsif @methods.include?(@method.intern)
+      render_method(@method)
+    else
+      raise "不明なメソッドです｡ [#{@method}]"
+    end
+  rescue => error
+    raise_error(error)
+  end
+  def views_path
+    @system_path ? "#{@system_path}views/" : "views/"
+  end
+  def append_system_path(path)
+    @system_path ? "#{@system_path}#{path}" : path 
   end
   def use_layout?
     @use_layout
@@ -70,17 +96,6 @@ class Ramy
     @title = "エラー"
     binding
   end
-  def start
-    if @method.blank? 
-      raise "メソッドが指定されていません｡"
-    elsif @methods.include?(@method.intern)
-      render_method(@method)
-    else
-      raise "不明なメソッドです｡ [#{@method}]"
-    end
-  rescue => error
-    raise_error(error)
-  end
   def error_method?
     @method.to_s == 'error'
   end
@@ -95,12 +110,15 @@ class Ramy
     elsif default_method?
       redirect('error')
     else
-      redirect(@default_method)      
+      redirect_default_method
     end
   end
   def render_method(method)
     send(method)
-    print_html(method)
+    render_html(method)
+  end
+  def redirect_default_method
+    redirect(@default_method)
   end
   def redirect(method,option="")
     location = "#{script_name}?mt=#{method}"
@@ -118,13 +136,40 @@ class Ramy
   def print_header(headers="text/html")
     print @cgi.header(headers)
   end
-  def print_html(method)
-    main_html = get_html_base(method).result(binding)
-    print_header
-    print use_layout? ? get_layout{main_html} : main_html
+  def render(template, method_layout=nil)
+    render_html(template, method_layout)
+    exit
   end
-  def get_layout
-    file = "views/layout/#{controller_name}.rhtml"
+  def render_method_layout(method_layout)
+    render(@method, method_layout)
+  end
+  def render_html(method, method_layout=nil)
+    # エラーもありうるのでヘッダー出力前にレンダー処理
+    main_html = 
+      if use_layout? 
+        get_layout(controller_name){ 
+        if method_layout
+          get_layout(method_layout){ get_html(method) }
+        else 
+          get_html(method)
+        end
+      }
+      else
+        if method_layout
+          get_layout(method_layout){ get_html(method) }
+        else 
+          get_html(method)
+        end
+      end
+    
+    print_header
+    print main_html
+  end
+  def get_html(method)
+    get_html_base(method).result(binding)
+  end
+  def get_layout(name)
+    file = "#{views_path}layout/#{name}.rhtml"
     get_html_file(file).result(binding)
   end
   def get_partial(method)
@@ -138,7 +183,7 @@ class Ramy
     ERB.new(text,nil,"-")
   end
   def get_html_base(base)
-    file = "views/#{controller_name}/#{base}.rhtml"
+    file = "#{views_path}#{controller_name}/#{base}.rhtml"
     get_html_file(file)
   end
   def set_default_method(method)
@@ -146,6 +191,9 @@ class Ramy
   end
   def set_methods(methods)
     @methods = methods
+  end
+  def add_methods(methods)
+    @methods.concat(methods)
   end
   def pop_session(key)
     str = @session[key]
@@ -184,9 +232,7 @@ class Ramy
       @session[key] = nil
   end
   def delete_session_keys(keys)
-    keys.each{|key| 
-      delete_session_key(key) 
-    }
+    keys.each{|key| delete_session_key(key) }
   end
   def session_delete
     @session.delete
@@ -195,11 +241,7 @@ class Ramy
     @session.update
   end
   def get_values(keys)
-    res = Array.new
-    keys.each{|key|
-      res << get_value(key.to_s)
-    }
-    res
+    keys.map{|key| get_value(key.to_s)}
   end
   def get_value(key)
     value = param(key)
@@ -223,11 +265,7 @@ class Ramy
     end
   end
   def params(keys)
-    res = Array.new
-    keys.each{|key|
-      res << param(key.to_s)
-    }
-    res
+    keys.map{|key| param(key.to_s)}
   end
   def get_page(num_pages)
     page = nil
@@ -262,6 +300,9 @@ class Ramy
   end
   def params_str
     @cgi.params.inspect + @session.inspect
+  end
+  def mail_string?(str)
+    str =~ /^[a-za-z0-9]+[\w\d._-]+@[\w\d_-]+\.[\w\d._-]+/
   end
   def log(value)
     Syslog.open(@prefix){|syslog|
